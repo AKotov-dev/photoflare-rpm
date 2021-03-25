@@ -1,0 +1,13 @@
+--- a/Photoflare.pro
++++ b/Photoflare.pro
+@@ -206,7 +206,8 @@
+                languages/pt_BR.ts \
+                languages/sv.ts \
+                languages/id.ts \
+-               languages/es.ts
++               languages/es.ts \
++               languages/ru_RU.ts
+ 
+ # Generate translations in build
+ TRANSLATIONS_FILES =
+
