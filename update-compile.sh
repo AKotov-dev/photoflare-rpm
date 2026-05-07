@@ -2,33 +2,49 @@
 
 clear
 
-# Архив программы в текущей директории
-if [ ! -f ./photoflare*.tar.gz ]; then
-    echo "Error: ./photoflare*.tar.gz not found!"
+ARCHIVE=$(ls ./photoflare*.tar.gz 2>/dev/null | head -n1)
+
+if [ -z "$ARCHIVE" ]; then
+    echo "Error: photoflare archive not found!"
     read a
     exit 1
 fi
 
-# Распаковка
-tar -xvf ./photoflare*.tar.gz
+echo "Archive: $ARCHIVE"
 
-# Находим каталог photoflare*
-dir=$(find . -maxdepth 1 -type d -name "photoflare*" | head -n 1)
+# Определяем имя каталога из архива
+DIR=$(tar -tf "$ARCHIVE" | head -n1 | cut -d/ -f1)
 
-# Переходим и запускаем
-if [ -n "$dir" ]; then
-    cd "$dir"
-# Обновить .ts (обязательно, синхронизация с кодом)
-    lupdate ./Photoflare.pro
-
-# Очистка несуществующих строк "obsolete" (могут пригодиться)
-#    lupdate -noobsolete ./Photoflare.pro
-
-# Пересобрать .qm
-    lrelease ./languages/*.ts
-else
-    echo "Error: Directory not found!"
+if [ -z "$DIR" ]; then
+    echo "Error: unable to determine source directory!"
     read a
+    exit 1
 fi
+
+# Удаляем старую распаковку
+rm -rf "./$DIR"
+
+# Распаковка
+tar -xvf "$ARCHIVE"
+
+# Проверка
+if [ ! -d "./$DIR" ]; then
+    echo "Error: source directory not found after unpack!"
+    read a
+    exit 1
+fi
+
+cd "./$DIR" || exit 1
+
+echo
+echo "=== Updating TS files ==="
+lupdate ./Photoflare.pro
+
+echo
+echo "=== Building QM files ==="
+lrelease ./languages/*.ts
+
+echo
+echo "Done."
 
 exit 0
